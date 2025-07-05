@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient, Decimal } = require('@prisma/client');
 require('dotenv').config();
 
 const app = express();
@@ -38,7 +38,7 @@ app.post('/transactions', async (req, res) => {
     // Create transaction
     const transaction = await prisma.transaction.create({
       data: {
-        amount: parseFloat(amount),
+        amount: new Decimal(amount),
         type,
         category,
         subcategory,

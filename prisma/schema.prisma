@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -16,7 +15,7 @@ datasource db {
 
 model Transaction {
   id          Int      @id @default(autoincrement())
-  amount      Float    @db.Decimal(10, 2)
+  amount      Decimal  @db.Decimal(10, 2)
   type        String
   category    String
   subcategory String?
