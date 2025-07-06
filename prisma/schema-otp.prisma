@@ -1,0 +1,60 @@
+// OTP and User Management Schema
+// This is a reference file showing the complete schema with OTP integration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  phone       String?  @unique
+  password    String   // Hashed with bcrypt
+  firstName   String?
+  lastName    String?
+  isVerified  Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  transactions Transaction[]
+  otpCodes    OTPCode[]
+  
+  @@map("users")
+}
+
+model OTPCode {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  code      String
+  type      String   // "SMS", "EMAIL", "LOGIN", "PASSWORD_RESET"
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("otp_codes")
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  amount      Decimal  @db.Decimal(10, 2)
+  type        String
+  category    String
+  subcategory String?
+  comments    String?
+  date        DateTime @default(now())
+  userId      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("transactions")
+} 
