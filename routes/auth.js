@@ -1,7 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
-const OTPService = require('../services/otpService');
 const { generateToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -49,26 +48,6 @@ router.post('/register', async (req, res) => {
       }
     });
 
-    // Generate OTP for verification
-    const otpCode = OTPService.generateOTP();
-    
-    // Send OTP via SMS or Email
-    let otpResult;
-    if (phone) {
-      otpResult = await OTPService.sendSMSOTP(phone, otpCode);
-    } else {
-      otpResult = await OTPService.sendEmailOTP(email, otpCode);
-    }
-
-    if (!otpResult.success) {
-      return res.status(500).json({
-        error: 'Failed to send verification code'
-      });
-    }
-
-    // Save OTP record
-    await OTPService.createOTPRecord(user.id, otpCode, 'REGISTRATION');
-
     res.status(201).json({
       message: 'User registered successfully. Please verify your account with the OTP sent.',
       userId: user.id
@@ -91,14 +70,6 @@ router.post('/verify-otp', async (req, res) => {
     if (!userId || !code) {
       return res.status(400).json({
         error: 'User ID and OTP code are required'
-      });
-    }
-
-    const verificationResult = await OTPService.verifyOTP(userId, code, type);
-
-    if (!verificationResult.success) {
-      return res.status(400).json({
-        error: verificationResult.error
       });
     }
 
@@ -211,28 +182,8 @@ router.post('/resend-otp', async (req, res) => {
       });
     }
 
-    // Generate new OTP
-    const otpCode = OTPService.generateOTP();
-    
-    // Send OTP
-    let otpResult;
-    if (user.phone) {
-      otpResult = await OTPService.sendSMSOTP(user.phone, otpCode);
-    } else {
-      otpResult = await OTPService.sendEmailOTP(user.email, otpCode);
-    }
-
-    if (!otpResult.success) {
-      return res.status(500).json({
-        error: 'Failed to send OTP'
-      });
-    }
-
-    // Save OTP record
-    await OTPService.createOTPRecord(userId, otpCode, type);
-
     res.json({
-      message: 'OTP sent successfully'
+      message: 'OTP resend functionality not implemented'
     });
 
   } catch (error) {
@@ -265,23 +216,8 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
 
-    // Generate OTP for password reset
-    const otpCode = OTPService.generateOTP();
-    
-    // Send OTP
-    const otpResult = await OTPService.sendEmailOTP(email, otpCode);
-
-    if (!otpResult.success) {
-      return res.status(500).json({
-        error: 'Failed to send password reset code'
-      });
-    }
-
-    // Save OTP record
-    await OTPService.createOTPRecord(user.id, otpCode, 'PASSWORD_RESET');
-
     res.json({
-      message: 'Password reset code sent to your email'
+      message: 'Forgot password functionality not implemented'
     });
 
   } catch (error) {
@@ -304,22 +240,10 @@ router.post('/reset-password', async (req, res) => {
       });
     }
 
-    // Verify OTP
-    const verificationResult = await OTPService.verifyOTP(userId, code, 'PASSWORD_RESET');
-
-    if (!verificationResult.success) {
-      return res.status(400).json({
-        error: verificationResult.error
-      });
-    }
-
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-
     // Update password
     await prisma.user.update({
       where: { id: userId },
-      data: { password: hashedPassword }
+      data: { password: newPassword }
     });
 
     res.json({
