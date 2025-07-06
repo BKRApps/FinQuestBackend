@@ -19,7 +19,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await prisma.User.findFirst({
       where: {
         OR: [
           { email },
@@ -38,7 +38,7 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
-    const user = await prisma.user.create({
+    const user = await prisma.User.create({
       data: {
         email,
         phone,
@@ -74,7 +74,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 
     // Update user verification status
-    await prisma.user.update({
+    await prisma.User.update({
       where: { id: userId },
       data: { isVerified: true }
     });
@@ -112,7 +112,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { email }
     });
 
@@ -172,7 +172,7 @@ router.post('/resend-otp', async (req, res) => {
       });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { id: userId }
     });
 
@@ -206,7 +206,7 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.User.findUnique({
       where: { email }
     });
 
@@ -241,7 +241,7 @@ router.post('/reset-password', async (req, res) => {
     }
 
     // Update password
-    await prisma.user.update({
+    await prisma.User.update({
       where: { id: userId },
       data: { password: newPassword }
     });
