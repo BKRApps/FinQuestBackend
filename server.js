@@ -7,9 +7,15 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 
+// Import auth routes
+const authRoutes = require('./routes/auth');
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Mount auth routes
+app.use('/auth', authRoutes);
 
 // Health check endpoint
 app.get('/', (req, res) => {
